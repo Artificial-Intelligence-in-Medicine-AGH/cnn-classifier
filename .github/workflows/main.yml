@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - main
+name: 🚀 Deploy scripts on push
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: 📂 Sync files
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+        with:
+          server: ${{ secrets.ftp_server }}
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          ssh_private_key: ""
+          remote_path: /net/tscratch/people/plgfrkubala/cnn-classifier
