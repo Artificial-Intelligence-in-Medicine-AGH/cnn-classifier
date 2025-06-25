@@ -116,7 +116,6 @@ def main():
         val_loss = val_loss / len(val_loader)
         print(f"Validation Loss: {val_loss:.4f}")
 
-        # TODO: Make sure we use it properly (does val_labels.astype(int) make any sense???)
         val_auc = roc_auc_score(
             y_true=val_labels,
             y_score=val_preds,
