@@ -8,6 +8,8 @@ val_transform = A.Compose([
     ToTensorV2(),
 ])
 
+test_transform = val_transform
+
 train_transform = A.Compose([
     A.HorizontalFlip(p=0.5),
     A.RandomRotate90(p=0.3),

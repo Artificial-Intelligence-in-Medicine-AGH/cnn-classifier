@@ -6,7 +6,7 @@ from PIL import Image
 from pydantic import BaseModel, ConfigDict
 from torch.utils.data import DataLoader, Dataset
 
-from augmentation.transform import train_transform, val_transform
+from augmentation.transform import train_transform, val_transform, test_transform
 from config import config
 
 # TODO: ----- Do osobnego csv -----
@@ -95,3 +95,15 @@ def get_loaders() -> tuple[DataLoader, DataLoader]:
     val_loader = DataLoader(val_dataset, batch_size=config.hyperparameters.batch_size, shuffle=False, num_workers=4)
 
     return train_loader, val_loader
+
+
+def get_test_loader():
+    labelsTable = np.genfromtxt(
+        config.labels_file_path, delimiter=",", dtype=str, usecols=(0, 1), skip_header=1
+    )
+    labels_dict: dict[str, str] = dict(labelsTable)
+    test_data = load_data_from_csv("test", labels_dict)
+    test_dataset = CustomDataset(test_data, transform=test_transform)
+    test_loader = DataLoader(test_dataset, batch_size=config.hyperparameters.batch_size, shuffle=False, num_workers=4)
+
+    return test_loader
