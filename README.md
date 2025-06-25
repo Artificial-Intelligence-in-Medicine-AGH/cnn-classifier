@@ -1,4 +1,4 @@
-# cardiomegaly cnn team2
+# cnn classifier
 
 Multiclassification algorithm created using Convolutional Neural Network
 
