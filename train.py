@@ -1,6 +1,3 @@
-# our files
-from config import config
-from  helper_scripts.logs_plots import save_logs_as_plots
 import os
 
 import numpy as np
@@ -11,6 +8,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 
 from config import config
 from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
+from helper_scripts.logs_plots import save_logs_as_plots
 
 hyperparameters = config.hyperparameters
 scheduler_params = hyperparameters.scheduler_params
@@ -20,7 +18,6 @@ VAL_DATA_PATH = os.path.join(config.dataset_path, "val")
 TEST_DATA_PATH = os.path.join(config.dataset_path, "test")
 LOGS_PATH = config.logs_path
 SAVE_MODEL_PATH = config.save_model_path
-
 
 
 def main():
@@ -43,7 +40,6 @@ def main():
                               drop_rate=drop_rate).to(device)
 
     print(f"============================ MODEL {config.model_name} ============================")
-    # os.makedirs(LOGS_PATH, exist_ok=True)
 
     best_auc = 0
     best_val_loss = 1e10
@@ -59,13 +55,9 @@ def main():
         for param in block.parameters():
             param.requires_grad = True
 
-    # TODO: rethink the optimizer
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                                  lr=hyperparameters.learning_rate, weight_decay=weight_decay)
 
-    # optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay = weight_decay)
-
-    # TODO: rethink the loss function and scheduler (do we need it?). I am fun of CrossEntropyLoss, but we could use other one
     criterion = nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
@@ -75,11 +67,11 @@ def main():
     )
 
     logs = {
-        "epoch" : [],
-        "train_loss" : [],
-        "val_loss" : [],
-        "val_auc" : [],
-        "val_accuracy" : [],
+        "epoch": [],
+        "train_loss": [],
+        "val_loss": [],
+        "val_auc": [],
+        "val_accuracy": [],
     }
     for epoch in range(n_epoch):
         print(f"\n================\nEpoch {epoch + 1}")
