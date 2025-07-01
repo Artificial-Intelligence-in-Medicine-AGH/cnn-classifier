@@ -6,6 +6,8 @@ Multiclassification algorithm created using Convolutional Neural Network
 
 Use python3.11, create virtual environment and install required packages
 
+Install pytorch by your preferences with official [PyTroch Get Started guide](https://pytorch.org/get-started/locally/)
+
 NOTE for AMD gpu users: try installing pytorch using following command BEFORE installing all other requirements:
 ```shell
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.3
