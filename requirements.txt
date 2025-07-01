@@ -1,8 +1,6 @@
-torch
 timm
 numpy
 nibabel
-torchvision
 scikit-learn
 tqdm
 pydantic
