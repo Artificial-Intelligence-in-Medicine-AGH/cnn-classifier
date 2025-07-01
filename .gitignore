@@ -1,4 +1,9 @@
 venv
 .venv
+
+data/*
+model/*
+logs/*
+
 config.json
 __pycache__
