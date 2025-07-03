@@ -15,6 +15,8 @@ def save_logs_as_plots(logs: dict, save_path: str):
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
+        plt.xlim([0, max(logs["epoch"]) + 10])
+        plt.ylim([0, max(logs[metric])+ 10])
 
         filename = f"{metric}.png"
         plt.savefig(os.path.join(save_path, filename))

@@ -10,6 +10,9 @@ from config import config
 from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
 from helper_scripts.logs_plots import save_logs_as_plots
 
+import sys
+import time
+
 hyperparameters = config.hyperparameters
 scheduler_params = hyperparameters.scheduler_params
 
@@ -21,6 +24,9 @@ SAVE_MODEL_PATH = config.save_model_path
 
 
 def main():
+    log_file = open(f"{LOGS_PATH}/training.log","w")
+    sys.stdout = log_file
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Running on device: {device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
 
@@ -68,12 +74,14 @@ def main():
 
     logs = {
         "epoch": [],
+        "epoch_time": [],
         "train_loss": [],
         "val_loss": [],
         "val_auc": [],
         "val_accuracy": [],
     }
     for epoch in range(n_epoch):
+        start = time.time()
         print(f"\n================\nEpoch {epoch + 1}")
         model.train()
         train_loss = 0.0
@@ -123,10 +131,13 @@ def main():
             y_pred=val_preds_binary,
         )
 
+        stop = time.time()
+
         print(f"Validation auc score: {val_auc}")
         print(f"Validation accuracy score: {val_accuracy}")
 
         logs["epoch"].append(epoch)
+        logs["epoch_time"].append(stop - start)
         logs["train_loss"].append(train_loss)
         logs["val_loss"].append(val_loss)
         logs["val_auc"].append(val_auc)
@@ -154,6 +165,7 @@ def main():
     torch.save(model.state_dict(), model_path)
     print(f"Final model saved")
 
+    log_file.close()
     print("Training completed.")
 
 
