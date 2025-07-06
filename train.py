@@ -132,12 +132,15 @@ def main():
         )
 
         stop = time.time()
+        epoch_time = stop - start
+
 
         print(f"Validation auc score: {val_auc}")
         print(f"Validation accuracy score: {val_accuracy}")
+        print(f"Epoch time: {round(epoch_time,2)} s")
 
         logs["epoch"].append(epoch)
-        logs["epoch_time"].append(stop - start)
+        logs["epoch_time"].append(epoch_time)
         logs["train_loss"].append(train_loss)
         logs["val_loss"].append(val_loss)
         logs["val_auc"].append(val_auc)
