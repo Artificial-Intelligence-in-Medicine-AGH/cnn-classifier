@@ -160,7 +160,7 @@ def main():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             model_path = os.path.join(SAVE_MODEL_PATH, f"Best_Loss.pth")
-            (checkpoint, model_path)
+            torch.save(checkpoint, model_path)
             print(f"Best loss model saved")
 
         if val_auc > best_auc:
