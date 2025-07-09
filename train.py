@@ -87,12 +87,12 @@ def main():
         train_loss = 0.0
         for imgs, labels in train_loader:
             imgs, labels = imgs.to(device), labels.to(device)
-            optimizer.zero_grad()
             outputs = model(imgs)
             loss = criterion(outputs, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_norm, norm_type=2)
             optimizer.step()
+            optimizer.zero_grad()
             train_loss += loss.item()
 
         train_loss = train_loss / len(train_loader)
