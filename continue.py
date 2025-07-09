@@ -13,18 +13,24 @@ from helper_scripts.logs_plots import save_logs_as_plots
 import sys
 import time
 
+
+if len(sys.argv) < 2:
+    print("Please provide a name of saved model you wish to train further")
+
 hyperparameters = config.hyperparameters
-scheduler_params = hyperparameters.scheduler_params
+
 
 TRAIN_DATA_PATH = os.path.join(config.dataset_path, "train")
 VAL_DATA_PATH = os.path.join(config.dataset_path, "val")
 TEST_DATA_PATH = os.path.join(config.dataset_path, "test")
 LOGS_PATH = config.logs_path
 SAVE_MODEL_PATH = config.save_model_path
+scheduler_params = hyperparameters.scheduler_params
+
 
 
 def main():
-    log_file = open(f"{LOGS_PATH}/training.log","w")
+    log_file = open(f"{LOGS_PATH}/training_continiuation.log","w")
     sys.stdout = log_file
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -45,10 +51,9 @@ def main():
     model = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=num_classes,
                               drop_rate=drop_rate).to(device)
 
-    print(f"============================ MODEL {config.model_name} ============================")
+    print(f"============================ MODEL {config.model_name} FROM {sys.argv[1]} FILE ============================")
 
-    best_auc = 0
-    best_val_loss = 1e10
+   
 
     for param in model.parameters():
         param.requires_grad = False
@@ -72,15 +77,22 @@ def main():
         factor=scheduler_params.factor,
     )
 
-    logs = {
-        "epoch": [],
-        "epoch_time": [],
-        "train_loss": [],
-        "val_loss": [],
-        "val_auc": [],
-        "val_accuracy": [],
-    }
-    for epoch in range(n_epoch):
+
+    #Loading model from .pth file
+    checkpoint = torch.load(f"{SAVE_MODEL_PATH}/{sys.argv[1]}") 
+
+    last_epoch = checkpoint['epoch']
+    model.load_state_dict(checkpoint['model'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    scheduler.load_state_dict(checkpoint['scheduler'])
+    best_val_loss = checkpoint['best_val_loss']
+    best_auc = checkpoint['best_auc']
+    logs = checkpoint['logs']
+
+
+
+
+    for epoch in range(last_epoch+1,n_epoch):
         start = time.time()
         print(f"\n================\nEpoch {epoch + 1}")
         model.train()
