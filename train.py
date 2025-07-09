@@ -146,26 +146,37 @@ def main():
         logs["val_auc"].append(val_auc)
         logs["val_accuracy"].append(val_accuracy)
 
+
+        checkpoint = {
+            'epoch':epoch,
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict(),
+            'best_val_loss': best_val_loss,
+            'best_auc': best_auc,
+            'logs': logs
+        }
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             model_path = os.path.join(SAVE_MODEL_PATH, f"Best_Loss.pth")
-            torch.save(model.state_dict(), model_path)
+            (checkpoint, model_path)
             print(f"Best loss model saved")
 
         if val_auc > best_auc:
             best_auc = val_auc
             model_path = os.path.join(SAVE_MODEL_PATH, f"Best_AUC.pth")
-            torch.save(model.state_dict(), model_path)
+            torch.save(checkpoint, model_path)
             print(f"Best auc model saved")
 
         if epoch % n_save == 0:
             save_logs_as_plots(logs=logs, save_path=LOGS_PATH)
             model_path = os.path.join(SAVE_MODEL_PATH, f"Latest.pth")
-            torch.save(model.state_dict(), model_path)
+            torch.save(checkpoint, model_path)
             print(f"Latest model saved")
 
     model_path = os.path.join(SAVE_MODEL_PATH, f"Final.pth")
-    torch.save(model.state_dict(), model_path)
+    torch.save(checkpoint, model_path)
     print(f"Final model saved")
 
     log_file.close()
