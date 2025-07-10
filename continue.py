@@ -20,16 +20,7 @@ if len(sys.argv) < 2:
     print("Please provide a name of saved model you wish to train further")
 
 hyperparameters = config.hyperparameters
-
-
-TRAIN_DATA_PATH = os.path.join(config.dataset_path, "train")
-VAL_DATA_PATH = os.path.join(config.dataset_path, "val")
-TEST_DATA_PATH = os.path.join(config.dataset_path, "test")
 LOGS_PATH = config.logs_path
-SAVE_MODEL_PATH = config.save_model_path
-scheduler_params = hyperparameters.scheduler_params
-
-
 
 def main():
     log_file = open(f"{LOGS_PATH}/training_continiuation.log","w")
@@ -37,24 +28,18 @@ def main():
 
     train = training_manager()
 
-    print(f"Running on device: {train.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-
     #################################
     n_epoch = hyperparameters.total_epoch
     n_save = hyperparameters.save_every
     ################################
 
+    print(f"Running on device: {train.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+    print(f"============================ MODEL {config.model_name} FROM {sys.argv[1]} FILE ============================")
+
+
     train_loader, val_loader = get_loaders()
 
 
-
-    print(f"============================ MODEL {config.model_name} FROM {sys.argv[1]} FILE ============================")
-
-   
-
- 
-
-    #Loading model from .pth file
     checkpoint = train.load_chceckpoint(sys.argv[1])
 
     last_epoch = checkpoint['epoch']
@@ -63,11 +48,9 @@ def main():
     logs = checkpoint['logs']
 
 
-
-
     for epoch in range(last_epoch+1,n_epoch):
         start = time.time()
-        
+
         print(f"\n================\nEpoch {epoch + 1}")
         
         train_loss = train.training_step(train_loader=train_loader)

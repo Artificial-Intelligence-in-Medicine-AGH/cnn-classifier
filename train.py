@@ -15,14 +15,9 @@ import time
 
 from training_manager import training_manager
 
+
 hyperparameters = config.hyperparameters
-
-TRAIN_DATA_PATH = os.path.join(config.dataset_path, "train")
-VAL_DATA_PATH = os.path.join(config.dataset_path, "val")
-TEST_DATA_PATH = os.path.join(config.dataset_path, "test")
 LOGS_PATH = config.logs_path
-SAVE_MODEL_PATH = config.save_model_path
-
 
 def main():
     log_file = open(f"{LOGS_PATH}/training.log","w")
@@ -31,22 +26,17 @@ def main():
     train_loader, val_loader = get_loaders()
     train = training_manager()
     
-    ##
+    #################################
     n_save = hyperparameters.save_every
     n_epoch = hyperparameters.total_epoch
-    ##
+    #################################
 
     print(f"Running on device: {train.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-
-  
-
     print(f"============================ MODEL {config.model_name} ============================")
 
     best_auc = 0
     best_val_loss = 1e10
     
-
-
 
     logs = {
         "epoch": [],
@@ -56,6 +46,7 @@ def main():
         "val_auc": [],
         "val_accuracy": [],
     }
+
     for epoch in range(n_epoch):
         start = time.time()
         print(f"\n================\nEpoch {epoch + 1}")
@@ -86,7 +77,6 @@ def main():
         stop = time.time()
         epoch_time = stop - start
 
-
         print(f"Validation auc score: {val_auc}")
         print(f"Validation accuracy score: {val_accuracy}")
         print(f"Epoch time: {round(epoch_time,2)} s")
@@ -97,7 +87,6 @@ def main():
         logs["val_loss"].append(val_loss)
         logs["val_auc"].append(val_auc)
         logs["val_accuracy"].append(val_accuracy)
-
 
 
         if val_loss < best_val_loss:
@@ -114,7 +103,6 @@ def main():
             save_logs_as_plots(logs=logs, save_path=LOGS_PATH)
             train.save_checkpoint("Latest", epoch, best_val_loss, best_auc, logs)
             print(f"Latest model saved")
-
 
 
     train.save_checkpoint("Final", config.hyperparameters.total_epoch, best_val_loss, best_auc, logs)
