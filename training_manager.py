@@ -103,5 +103,11 @@ class training_manager():
         return checkpoint
     
     def load_chceckpoint(self, name:str):
-        return torch.load(os.path.join(config.save_model_path, name))
+        checkpoint = torch.load(os.path.join(config.save_model_path, name))
+        
+        self.model.load_state_dict(checkpoint['model'])
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
+        self.scheduler.load_state_dict(checkpoint['scheduler'])
+    
+        return checkpoint
     

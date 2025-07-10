@@ -112,7 +112,7 @@ def main():
 
         if epoch % n_save == 0:
             save_logs_as_plots(logs=logs, save_path=LOGS_PATH)
-            train.save_checkpoint("Latest.pth", epoch, best_val_loss, best_auc, logs)
+            train.save_checkpoint("Latest", epoch, best_val_loss, best_auc, logs)
             print(f"Latest model saved")
 
 

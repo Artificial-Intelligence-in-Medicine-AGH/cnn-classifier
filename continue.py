@@ -9,6 +9,8 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 from config import config
 from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
 from helper_scripts.logs_plots import save_logs_as_plots
+from training_manager import training_manager
+
 
 import sys
 import time
@@ -33,58 +35,29 @@ def main():
     log_file = open(f"{LOGS_PATH}/training_continiuation.log","w")
     sys.stdout = log_file
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Running on device: {device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+    train = training_manager()
+
+    print(f"Running on device: {train.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
 
     #################################
-    weight_decay = hyperparameters.weight_decay
-    max_norm = hyperparameters.max_norm
-    drop_rate = hyperparameters.drop_rate
     n_epoch = hyperparameters.total_epoch
     n_save = hyperparameters.save_every
     ################################
 
     train_loader, val_loader = get_loaders()
 
-    num_classes = len(REF_CLASSES)
 
-    model = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=num_classes,
-                              drop_rate=drop_rate).to(device)
 
     print(f"============================ MODEL {config.model_name} FROM {sys.argv[1]} FILE ============================")
 
    
 
-    for param in model.parameters():
-        param.requires_grad = False
-
-    for param in model.classifier.parameters():
-        param.requires_grad = True
-
-    # Unfreeze the last N blocks
-    for block in model.blocks[-hyperparameters.num_blocks_to_unfreeze:]:
-        for param in block.parameters():
-            param.requires_grad = True
-
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                                 lr=hyperparameters.learning_rate, weight_decay=weight_decay)
-
-    criterion = nn.CrossEntropyLoss()
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode=scheduler_params.mode,
-        patience=scheduler_params.patience,
-        factor=scheduler_params.factor,
-    )
-
+ 
 
     #Loading model from .pth file
-    checkpoint = torch.load(f"{SAVE_MODEL_PATH}/{sys.argv[1]}") 
+    checkpoint = train.load_chceckpoint(sys.argv[1])
 
     last_epoch = checkpoint['epoch']
-    model.load_state_dict(checkpoint['model'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    scheduler.load_state_dict(checkpoint['scheduler'])
     best_val_loss = checkpoint['best_val_loss']
     best_auc = checkpoint['best_auc']
     logs = checkpoint['logs']
@@ -94,38 +67,15 @@ def main():
 
     for epoch in range(last_epoch+1,n_epoch):
         start = time.time()
+        
         print(f"\n================\nEpoch {epoch + 1}")
-        model.train()
-        train_loss = 0.0
-        for imgs, labels in train_loader:
-            imgs, labels = imgs.to(device), labels.to(device)
-            outputs = model(imgs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_norm, norm_type=2)
-            optimizer.step()
-            optimizer.zero_grad()
-            train_loss += loss.item()
-
-        train_loss = train_loss / len(train_loader)
+        
+        train_loss = train.training_step(train_loader=train_loader)
+        
         print(f"\nTrain Loss: {train_loss:.4f}")
 
-        model.eval()
-        val_preds, val_labels = [], []
-        val_loss = 0.0
-        with torch.no_grad():
-            for imgs, labels in val_loader:
-                imgs, labels = imgs.to(device), labels.to(device)
-                outputs = model(imgs)
-                loss = criterion(outputs, labels)
-                val_loss += loss.item()
-                probs = torch.softmax(outputs, dim=1)
-                val_preds.append(probs.cpu().numpy())
-                val_labels.extend(labels.cpu().numpy())
+        val_preds, val_labels, val_loss = train.validation_step(val_loader=val_loader)
 
-        val_preds = np.concatenate(val_preds, axis=0)
-        val_labels = np.array(val_labels)
-        val_loss = val_loss / len(val_loader)
         print(f"Validation Loss: {val_loss:.4f}")
 
         val_auc = roc_auc_score(
@@ -133,7 +83,7 @@ def main():
             y_score=val_preds,
             multi_class="ovr",
         )
-        scheduler.step(val_auc)
+        train.scheduler.step(val_auc)
 
         # Needed by accuracy_score classifier
         THRESHOLD = 0.5
@@ -159,36 +109,25 @@ def main():
         logs["val_accuracy"].append(val_accuracy)
 
 
-        checkpoint = {
-            'epoch':epoch,
-            'model': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict(),
-            'best_val_loss': best_val_loss,
-            'best_auc': best_auc,
-            'logs': logs
-        }
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            model_path = os.path.join(SAVE_MODEL_PATH, f"Best_Loss.pth")
-            torch.save(checkpoint, model_path)
+            train.save_checkpoint("Best_Loss", epoch, best_val_loss, best_auc, logs)
             print(f"Best loss model saved")
 
         if val_auc > best_auc:
             best_auc = val_auc
-            model_path = os.path.join(SAVE_MODEL_PATH, f"Best_AUC.pth")
-            torch.save(checkpoint, model_path)
+            train.save_checkpoint("Best_AUC", epoch, best_val_loss, best_auc, logs)
             print(f"Best auc model saved")
 
         if epoch % n_save == 0:
             save_logs_as_plots(logs=logs, save_path=LOGS_PATH)
-            model_path = os.path.join(SAVE_MODEL_PATH, f"Latest.pth")
-            torch.save(checkpoint, model_path)
+            train.save_checkpoint("Latest", epoch, best_val_loss, best_auc, logs)
             print(f"Latest model saved")
 
-    model_path = os.path.join(SAVE_MODEL_PATH, f"Final.pth")
-    torch.save(checkpoint, model_path)
+
+
+    train.save_checkpoint("Final", config.hyperparameters.total_epoch, best_val_loss, best_auc, logs)
     print(f"Final model saved")
 
     log_file.close()
