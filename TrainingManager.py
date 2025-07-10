@@ -14,7 +14,7 @@ hyperparameters = config.hyperparameters
 
 
 
-class training_manager():
+class TrainingManager():
     def __init__(self):
 
         #training elements configuration

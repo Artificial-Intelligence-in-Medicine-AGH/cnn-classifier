@@ -9,7 +9,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 from config import config
 from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
 from helper_scripts.logs_plots import save_logs_as_plots
-from training_manager import training_manager
+from TrainingManager import TrainingManager
 
 
 import sys
@@ -26,7 +26,7 @@ def main():
     log_file = open(f"{LOGS_PATH}/training_continiuation.log","w")
     sys.stdout = log_file
 
-    train = training_manager()
+    train = TrainingManager()
 
     #################################
     n_epoch = hyperparameters.total_epoch

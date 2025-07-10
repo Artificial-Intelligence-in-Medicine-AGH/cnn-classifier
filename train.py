@@ -13,7 +13,7 @@ from helper_scripts.logs_plots import save_logs_as_plots
 import sys
 import time
 
-from training_manager import training_manager
+from TrainingManager import TrainingManager
 
 
 hyperparameters = config.hyperparameters
@@ -24,7 +24,7 @@ def main():
     sys.stdout = log_file
 
     train_loader, val_loader = get_loaders()
-    train = training_manager()
+    train = TrainingManager()
     
     #################################
     n_save = hyperparameters.save_every
