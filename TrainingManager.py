@@ -12,14 +12,8 @@ from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
 
 hyperparameters = config.hyperparameters
 
-
-
 class TrainingManager():
     def __init__(self):
-
-        #training elements configuration
-        
-        
         self.device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model  = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=len(REF_CLASSES),
                               drop_rate=hyperparameters.drop_rate).to(self.device)
@@ -48,7 +42,7 @@ class TrainingManager():
         
 
     
-    def training_step(self, train_loader):
+    def training_step(self, train_loader) -> float:
         
         self.model.train()
         train_loss = 0.0
@@ -66,7 +60,7 @@ class TrainingManager():
         return train_loss / len(train_loader)
     
 
-    def validation_step(self, val_loader):
+    def validation_step(self, val_loader) -> tuple[float]:
         self.model.eval()
         val_preds, val_labels = [], []
         val_loss = 0.0
@@ -87,7 +81,7 @@ class TrainingManager():
         return val_preds, val_labels, val_loss
     
 
-    def save_checkpoint(self, name:str, epoch:int, best_val_loss:float, best_auc:float, logs:dict):
+    def save_checkpoint(self, name:str, epoch:int, best_val_loss:float, best_auc:float, logs:dict) -> dict:
         checkpoint = {
             'epoch':epoch,
             'model': self.model.state_dict(),
@@ -102,7 +96,7 @@ class TrainingManager():
 
         return checkpoint
     
-    def load_chceckpoint(self, name:str):
+    def load_chceckpoint(self, name:str) -> dict:
         checkpoint = torch.load(os.path.join(config.save_model_path, name))
         
         self.model.load_state_dict(checkpoint['model'])
