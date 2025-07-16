@@ -42,7 +42,7 @@ class TrainingManager():
         
 
     
-    def training_step(self, train_loader) -> float:
+    def training_step(self, train_loader:torch.utils.data.DataLoader) -> float:
         
         self.model.train()
         train_loss = 0.0
@@ -60,7 +60,7 @@ class TrainingManager():
         return train_loss / len(train_loader)
     
 
-    def validation_step(self, val_loader) -> tuple[float]:
+    def validation_step(self, val_loader:torch.utils.data.DataLoader) -> (np.ndarray, np.ndarray, float):  # type: ignore
         self.model.eval()
         val_preds, val_labels = [], []
         val_loss = 0.0
