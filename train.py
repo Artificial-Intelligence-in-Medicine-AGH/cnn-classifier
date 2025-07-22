@@ -12,105 +12,30 @@ from helper_scripts.logs_plots import save_logs_as_plots
 
 import sys
 import time
+import argparse
+
 
 from TrainingManager import TrainingManager
 
 
-hyperparameters = config.hyperparameters
-LOGS_PATH = config.logs_path
+checkpoint_name = None
+
+
+def parse_run_arguments() -> None:
+    global checkpoint_name
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--continue_training', action="store", default=None)
+    args = parser.parse_args()
+
+    checkpoint_name = args.continue_training  
+
 
 def main():
-    log_file = open(f"{LOGS_PATH}/training.log","w")
-    sys.stdout = log_file
-
-    train_loader, val_loader = get_loaders()
-    train = TrainingManager()
-    
-    #################################
-    n_save = hyperparameters.save_every
-    n_epoch = hyperparameters.total_epoch
-    #################################
-
-    print(f"Running on device: {train.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-    print(f"============================ MODEL {config.model_name} ============================")
-
-    best_auc = 0
-    best_val_loss = 1e10
-    
-
-    logs = {
-        "epoch": [],
-        "epoch_time": [],
-        "train_loss": [],
-        "val_loss": [],
-        "val_auc": [],
-        "val_accuracy": [],
-    }
-
-    for epoch in range(n_epoch):
-        start = time.time()
-        print(f"\n================\nEpoch {epoch + 1}")
-        
-        train_loss = train.training_step(train_loader=train_loader)
-        
-        print(f"\nTrain Loss: {train_loss:.4f}")
-
-        val_preds, val_labels, val_loss = train.validation_step(val_loader=val_loader)
-
-        print(f"Validation Loss: {val_loss:.4f}")
-
-        val_auc = roc_auc_score(
-            y_true=val_labels,
-            y_score=val_preds,
-            multi_class="ovr",
-        )
-        train.scheduler.step(val_auc)
-
-        # Needed by accuracy_score classifier
-        THRESHOLD = 0.5
-        val_preds_binary = (val_preds > THRESHOLD)
-        val_accuracy = accuracy_score(
-            y_true=val_labels,
-            y_pred=val_preds_binary,
-        )
-
-        stop = time.time()
-        epoch_time = stop - start
-
-        print(f"Validation auc score: {val_auc}")
-        print(f"Validation accuracy score: {val_accuracy}")
-        print(f"Epoch time: {round(epoch_time,2)} s")
-
-        logs["epoch"].append(epoch)
-        logs["epoch_time"].append(epoch_time)
-        logs["train_loss"].append(train_loss)
-        logs["val_loss"].append(val_loss)
-        logs["val_auc"].append(val_auc)
-        logs["val_accuracy"].append(val_accuracy)
-
-
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            train.save_checkpoint("Best_Loss", epoch, best_val_loss, best_auc, logs)
-            print(f"Best loss model saved")
-
-        if val_auc > best_auc:
-            best_auc = val_auc
-            train.save_checkpoint("Best_AUC", epoch, best_val_loss, best_auc, logs)
-            print(f"Best auc model saved")
-
-        if epoch % n_save == 0:
-            save_logs_as_plots(logs=logs, save_path=LOGS_PATH)
-            train.save_checkpoint("Latest", epoch, best_val_loss, best_auc, logs)
-            print(f"Latest model saved")
-
-
-    train.save_checkpoint("Final", config.hyperparameters.total_epoch, best_val_loss, best_auc, logs)
-    print(f"Final model saved")
-
-    log_file.close()
-    print("Training completed.")
+    trainer = TrainingManager()
+    trainer.train(checkpoint_name=checkpoint_name)
 
 
 if __name__ == "__main__":
+    parse_run_arguments()
     main()
