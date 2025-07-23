@@ -77,7 +77,7 @@ class TrainingManager():
         return avg_loss
     
 
-    def _validation_step(self, val_loader:torch.utils.data.DataLoader) -> (np.ndarray, np.ndarray, float):  # type: ignore
+    def _validation_step(self, val_loader:torch.utils.data.DataLoader) -> tuple[float,float,float]:
         self.model.eval()
         val_preds, val_labels = [], []
         val_loss = 0.0
@@ -95,7 +95,21 @@ class TrainingManager():
         val_labels = np.array(val_labels)
         val_loss = val_loss / len(val_loader)
 
-        return val_preds, val_labels, val_loss
+        val_auc = roc_auc_score(
+                y_true=val_labels,
+                y_score=val_preds,
+                multi_class="ovr",
+            )
+         # Needed by accuracy_score classifier
+        THRESHOLD = 0.5
+        val_preds_binary = (val_preds > THRESHOLD)
+        val_accuracy = accuracy_score(
+            y_true=val_labels,
+            y_pred=val_preds_binary,
+        )
+        
+
+        return val_accuracy, val_auc, val_loss
     
 
     def _save_checkpoint(self, name:str) -> dict:
@@ -160,24 +174,12 @@ class TrainingManager():
             
             print(f"\nTrain Loss: {train_loss:.4f}")
 
-            val_preds, val_labels, val_loss = self._validation_step(val_loader=self.val_loader)
+            val_accuracy, val_auc, val_loss = self._validation_step(val_loader=self.val_loader)
 
             print(f"Validation Loss: {val_loss:.4f}")
 
-            val_auc = roc_auc_score(
-                y_true=val_labels,
-                y_score=val_preds,
-                multi_class="ovr",
-            )
+           
             self.scheduler.step(val_auc)
-
-            # Needed by accuracy_score classifier
-            THRESHOLD = 0.5
-            val_preds_binary = (val_preds > THRESHOLD)
-            val_accuracy = accuracy_score(
-                y_true=val_labels,
-                y_pred=val_preds_binary,
-            )
 
             stop = time.time()
             epoch_time = stop - start
