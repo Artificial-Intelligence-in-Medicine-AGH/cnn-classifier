@@ -128,7 +128,7 @@ class TrainingManager():
         return checkpoint
     
 
-    def train(self, checkpoint_name:str):   
+    def training_loop(self, checkpoint_name:str):   
         
         if checkpoint_name is not None:
             self.load_chceckpoint(checkpoint_name)
