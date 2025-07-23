@@ -58,7 +58,7 @@ class TrainingManager():
         self.train_loader, self.val_loader  = get_loaders()
 
 
-    def __training_step(self, train_loader:torch.utils.data.DataLoader) -> float:
+    def _training_step(self, train_loader:torch.utils.data.DataLoader) -> float:
         
         self.model.train()
         train_loss = 0.0
@@ -76,7 +76,7 @@ class TrainingManager():
         return train_loss / len(train_loader)
     
 
-    def __validation_step(self, val_loader:torch.utils.data.DataLoader) -> (np.ndarray, np.ndarray, float):  # type: ignore
+    def _validation_step(self, val_loader:torch.utils.data.DataLoader) -> (np.ndarray, np.ndarray, float):  # type: ignore
         self.model.eval()
         val_preds, val_labels = [], []
         val_loss = 0.0
@@ -97,7 +97,7 @@ class TrainingManager():
         return val_preds, val_labels, val_loss
     
 
-    def __save_checkpoint(self, name:str) -> dict:
+    def _save_checkpoint(self, name:str) -> dict:
         checkpoint = {
             'epoch':self.epoch,
             'model': self.model.state_dict(),
@@ -112,7 +112,7 @@ class TrainingManager():
 
         return checkpoint
     
-    def load_chceckpoint(self, name:str) -> dict:
+    def _load_chceckpoint(self, name:str) -> dict:
         checkpoint = torch.load(os.path.join(config.save_model_path, name))
         
         self.epoch = checkpoint['epoch']
@@ -131,7 +131,7 @@ class TrainingManager():
     def training_loop(self, checkpoint_name:str):   
         
         if checkpoint_name is not None:
-            self.load_chceckpoint(checkpoint_name)
+            self._load_chceckpoint(checkpoint_name)
             log_file = open(f"{config.logs_path}/training.log","a")
             sys.stdout = log_file
 
@@ -155,11 +155,11 @@ class TrainingManager():
             start = time.time()
             print(f"\n================\nEpoch {epoch + 1}")
             
-            train_loss = self.__training_step(train_loader=self.train_loader)
+            train_loss = self._training_step(train_loader=self.train_loader)
             
             print(f"\nTrain Loss: {train_loss:.4f}")
 
-            val_preds, val_labels, val_loss = self.__validation_step(val_loader=self.val_loader)
+            val_preds, val_labels, val_loss = self._validation_step(val_loader=self.val_loader)
 
             print(f"Validation Loss: {val_loss:.4f}")
 
@@ -197,23 +197,23 @@ class TrainingManager():
 
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
-                self.__save_checkpoint("Best_Loss")
+                self._save_checkpoint("Best_Loss")
                 print(f"Best loss model saved")
 
             if val_auc > self.best_auc:
                 self.best_auc = val_auc
-                self.__save_checkpoint("Best_auc")
+                self._save_checkpoint("Best_auc")
                 print(f"Best auc model saved")
 
             if epoch % n_save == 0:
                 save_logs_as_plots(logs=self.logs, save_path=config.logs_path)
-                self.__save_checkpoint("Latest")
+                self._save_checkpoint("Latest")
                 print(f"Latest model saved")
 
             
 
 
-        self.__save_checkpoint("Final", config.hyperparameters.total_epoch, self.best_val_loss, self.best_auc, self.logs)
+        self._save_checkpoint("Final")
         print(f"Final model saved")
 
         log_file.close()
