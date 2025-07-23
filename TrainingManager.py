@@ -1,3 +1,4 @@
+from typing import Optional
 import timm
 import torch
 import torch.nn as nn
@@ -43,7 +44,7 @@ class TrainingManager():
                 factor=hyperparameters.scheduler_params.factor,
             )
         
-        self.epoch = 0
+        self.last_completed_epoch = -1
         self.best_auc = 0
         self.best_val_loss = 1e10
         self.logs = {
@@ -114,7 +115,7 @@ class TrainingManager():
 
     def _save_checkpoint(self, name:str) -> dict:
         checkpoint = {
-            'epoch':self.epoch,
+            'epoch':self.last_completed_epoch,
             'model': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'scheduler': self.scheduler.state_dict(),
@@ -127,10 +128,10 @@ class TrainingManager():
 
         return checkpoint
     
-    def _load_chceckpoint(self, name:str) -> dict:
+    def _load_chceckpoint(self, name:Optional[str]) -> dict:
         checkpoint = torch.load(os.path.join(config.save_model_path, name))
         
-        self.epoch = checkpoint['epoch']
+        self.last_completed_epoch = checkpoint['epoch']
 
         self.model.load_state_dict(checkpoint['model'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -166,7 +167,7 @@ class TrainingManager():
         n_epoch = hyperparameters.total_epoch
         #################################
 
-        for epoch in range(self.epoch, n_epoch):
+        for epoch in range(self.last_completed_epoch + 1, n_epoch):
             start = time.time()
             print(f"\n================\nEpoch {epoch + 1}")
             
@@ -196,7 +197,7 @@ class TrainingManager():
             self.logs["val_accuracy"].append(val_accuracy)
 
 
-            self.epoch = epoch + 1
+            self.last_completed_epoch = epoch
 
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
