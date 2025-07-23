@@ -163,14 +163,8 @@ class TrainingManager():
     
 
     def training_loop(self):   
-        
-        
-        #################################
-        n_save = hyperparameters.save_every
-        n_epoch = hyperparameters.total_epoch
-        #################################
 
-        for epoch in range(self.last_completed_epoch + 1, n_epoch):
+        for epoch in range(self.last_completed_epoch + 1, hyperparameters.total_epoch):
             start = time.time()
             print(f"\n================\nEpoch {epoch + 1}")
             
@@ -212,7 +206,7 @@ class TrainingManager():
                 self._save_checkpoint("Best_auc")
                 print(f"Best auc model saved")
 
-            if epoch % n_save == 0:
+            if epoch % hyperparameters.save_every == 0:
                 save_logs_as_plots(logs=self.logs, save_path=config.logs_path)
                 self._save_checkpoint("Latest")
                 print(f"Latest model saved")
