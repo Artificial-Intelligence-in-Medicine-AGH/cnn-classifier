@@ -73,7 +73,8 @@ class TrainingManager():
             self.optimizer.zero_grad()
             train_loss += loss.item()
 
-        return train_loss / len(train_loader)
+        avg_loss = train_loss / len(train_loader)
+        return avg_loss
     
 
     def _validation_step(self, val_loader:torch.utils.data.DataLoader) -> (np.ndarray, np.ndarray, float):  # type: ignore
