@@ -1,4 +1,6 @@
 from typing import Optional
+from datetime import datetime
+
 import timm
 import torch
 import torch.nn as nn
@@ -7,6 +9,7 @@ import numpy as np
 import os
 import time
 import sys
+
 
 from config import config
 from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
@@ -57,21 +60,19 @@ class TrainingManager():
         }
 
         self.train_loader, self.val_loader  = get_loaders()
-
+        
+        
+        self.log_file = open(f"{config.logs_path}/training_{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.log","w") 
+        sys.stdout = self.log_file
         
         if checkpoint_name is not None:
             self._load_chceckpoint(checkpoint_name)
-            self.log_file = open(f"{config.logs_path}/training.log","a")
-            sys.stdout = self.log_file
 
-            print(f"\n\nReasuming training from {checkpoint_name} file")
+            print(f"Reasuming training from {checkpoint_name} file")
             print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
             print(f"============================ MODEL {config.model_name} ============================")
 
         else:
-            self.log_file = open(f"{config.logs_path}/training.log","w")
-            sys.stdout  = self.log_file
-            
             print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
             print(f"============================ MODEL {config.model_name} ============================")
 
@@ -167,6 +168,7 @@ class TrainingManager():
         for epoch in range(self.last_completed_epoch + 1, hyperparameters.total_epoch):
             start = time.time()
             print(f"\n================\nEpoch {epoch + 1}")
+            print(f"{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
             
             train_loss = self._training_step(train_loader=self.train_loader)
             
