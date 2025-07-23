@@ -28,12 +28,12 @@ def parse_run_arguments() -> None:
     parser.add_argument('-l_ch', '--load_checkpoint', action="store", default=None)
     args = parser.parse_args()
 
-    checkpoint_name = args.continue_training  
+    checkpoint_name = args.load_checkpoint  
 
 
 def main():
-    trainer = TrainingManager()
-    trainer.train(checkpoint_name=checkpoint_name)
+    trainer = TrainingManager(checkpoint_name=checkpoint_name)
+    trainer.training_loop()
 
 
 if __name__ == "__main__":

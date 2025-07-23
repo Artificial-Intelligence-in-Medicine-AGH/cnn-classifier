@@ -17,7 +17,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 hyperparameters = config.hyperparameters
 
 class TrainingManager():
-    def __init__(self):
+    def __init__(self, checkpoint_name:Optional[str]):
         self.device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model  = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=len(REF_CLASSES),
                               drop_rate=hyperparameters.drop_rate).to(self.device)
@@ -57,6 +57,24 @@ class TrainingManager():
         }
 
         self.train_loader, self.val_loader  = get_loaders()
+
+        
+        if checkpoint_name is not None:
+            self._load_chceckpoint(checkpoint_name)
+            self.log_file = open(f"{config.logs_path}/training.log","a")
+            sys.stdout = self.log_file
+
+            print(f"\n\nReasuming training from {checkpoint_name} file")
+            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+            print(f"============================ MODEL {config.model_name} ============================")
+
+        else:
+            self.log_file = open(f"{config.logs_path}/training.log","w")
+            sys.stdout  = self.log_file
+            
+            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+            print(f"============================ MODEL {config.model_name} ============================")
+
 
 
     def _training_step(self, train_loader:torch.utils.data.DataLoader) -> float:
@@ -144,24 +162,9 @@ class TrainingManager():
         return checkpoint
     
 
-    def training_loop(self, checkpoint_name:str):   
+    def training_loop(self):   
         
-        if checkpoint_name is not None:
-            self._load_chceckpoint(checkpoint_name)
-            log_file = open(f"{config.logs_path}/training.log","a")
-            sys.stdout = log_file
-
-            print(f"\n\nReasuming training from {checkpoint_name} file")
-            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            print(f"============================ MODEL {config.model_name} ============================")
-
-        else:
-            log_file = open(f"{config.logs_path}/training.log","w")
-            sys.stdout  = log_file
-            
-            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            print(f"============================ MODEL {config.model_name} ============================")
-
+        
         #################################
         n_save = hyperparameters.save_every
         n_epoch = hyperparameters.total_epoch
@@ -220,5 +223,5 @@ class TrainingManager():
         self._save_checkpoint("Final")
         print(f"Final model saved")
 
-        log_file.close()
+        self.log_file.close()
         print("Training completed.")
