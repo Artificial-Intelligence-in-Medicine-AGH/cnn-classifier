@@ -24,7 +24,7 @@ class Logger():
         with open(self.log_file_name, "a") as f:
             print(line, file = f)
 
-    def save_params(self, epoch, epoch_time, train_loss, val_loss,val_auc, val_accuracy ):
+    def save_params(self, epoch, epoch_time, train_loss, val_loss,val_auc, val_accuracy):
         self.logs["epoch"].append(epoch)
         self.logs["epoch_time"].append(epoch_time)
         self.logs["train_loss"].append(train_loss)
