@@ -207,6 +207,4 @@ class TrainingManager():
 
         self._save_checkpoint("Final")
         self.log(f"Final model saved")
-
-        del self.log
         self.log("Training completed.")
