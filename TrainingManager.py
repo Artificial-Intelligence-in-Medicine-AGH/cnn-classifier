@@ -1,5 +1,4 @@
 from typing import Optional
-from datetime import datetime
 
 import timm
 import torch
@@ -161,8 +160,7 @@ class TrainingManager():
 
         for epoch in range(self.last_completed_epoch + 1, hyperparameters.total_epoch):
             start = time.time()
-            self.log(f"\n================\nEpoch {epoch + 1}")
-            self.log(f"{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
+            self.log(f"\n================\nEpoch {epoch + 1}", time=True)
             
             train_loss = self._training_step(train_loader=self.train_loader)
             

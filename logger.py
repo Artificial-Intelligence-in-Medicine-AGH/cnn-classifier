@@ -20,9 +20,11 @@ class Logger():
         self.current_log = ""
         self.log_file_name = f"{config.logs_path}/training_{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.log"
 
-    def __call__(self, line:str) -> str:
+    def __call__(self, line:str, time:bool=False) -> str:
         with open(self.log_file_name, "a") as f:
             print(line, file = f)
+            if time:
+                print(datetime.today().strftime('%Y-%m-%d %H:%M:%S'), file=f)
         
         return line
 
