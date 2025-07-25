@@ -16,23 +16,10 @@ if len(sys.argv) < 2:
     exit()
 
 
-REF_CLASSES = [
-    "No Finding",
-    "Cardiomegaly",
-    "Emphysema",
-    "Effusion",
-    "Hernia",
-    "Infiltration",
-    "Mass",
-    "Nodule",
-    "Atelectasis",
-    "Pneumothorax",
-    "Pleural_Thickening",
-    "Pneumonia",
-    "Fibrosis",
-    "Edema",
-    "Consolidation",
-]
+REF_CLASSES = config.classes
+
+if not None:
+    REF_CLASSES.append("No Finding")
 
 def get_ratios(labelsTable: np.ndarray, start: int, stop: int) -> np.ndarray:
     classes = {}

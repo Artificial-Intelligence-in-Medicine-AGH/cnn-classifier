@@ -12,7 +12,7 @@ import sys
 
 
 from config import config
-from dataset_manager.dataset_manager import get_loaders, REF_CLASSES
+from dataset_manager.dataset_manager import get_loaders
 from helper_scripts.logs_plots import save_logs_as_plots
 
 from sklearn.metrics import roc_auc_score, accuracy_score
@@ -22,7 +22,7 @@ hyperparameters = config.hyperparameters
 class TrainingManager():
     def __init__(self, checkpoint_name:Optional[str]):
         self.device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model  = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=len(REF_CLASSES),
+        self.model  = timm.create_model(config.model_name, pretrained=True, in_chans=config.num_channels, num_classes=len(config.classes),
                               drop_rate=hyperparameters.drop_rate).to(self.device)
 
         for param in self.model.parameters():
