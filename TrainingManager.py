@@ -66,7 +66,11 @@ class TrainingManager():
         sys.stdout = self.log_file
         
         if checkpoint_name is not None:
-            self._load_chceckpoint(checkpoint_name)
+            try:
+                self._load_chceckpoint(checkpoint_name)
+            except FileNotFoundError:
+                print("File name is Incorrect")
+                exit()
 
             print(f"Reasuming training from {checkpoint_name} file")
             print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
