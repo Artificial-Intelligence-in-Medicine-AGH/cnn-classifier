@@ -15,6 +15,8 @@ from config import config
 from dataset_manager.dataset_manager import get_loaders
 from helper_scripts.logs_plots import save_logs_as_plots
 
+from logger import Logger
+
 from sklearn.metrics import roc_auc_score, accuracy_score
 
 hyperparameters = config.hyperparameters
@@ -50,35 +52,25 @@ class TrainingManager():
         self.last_completed_epoch = -1
         self.best_auc = 0
         self.best_val_loss = 1e10
-        self.logs = {
-            "epoch": [],
-            "epoch_time": [],
-            "train_loss": [],
-            "val_loss": [],
-            "val_auc": [],
-            "val_accuracy": [],
-        }
+        self.log = Logger()
 
         self.train_loader, self.val_loader  = get_loaders()
-        
-        
-        self.log_file = open(f"{config.logs_path}/training_{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.log","w") 
-        sys.stdout = self.log_file
-        
+
+
         if checkpoint_name is not None:
             try:
                 self._load_chceckpoint(checkpoint_name)
             except FileNotFoundError:
-                print("File name is Incorrect")
+                self.log("File name is Incorrect")
                 exit()
 
-            print(f"Reasuming training from {checkpoint_name} file")
-            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            print(f"============================ MODEL {config.model_name} ============================")
+            self.log(f"Reasuming training from {checkpoint_name} file")
+            self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+            self.log(f"============================ MODEL {config.model_name} ============================")
 
         else:
-            print(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            print(f"============================ MODEL {config.model_name} ============================")
+            self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+            self.log(f"============================ MODEL {config.model_name} ============================")
 
 
 
@@ -144,7 +136,7 @@ class TrainingManager():
             'scheduler': self.scheduler.state_dict(),
             'best_val_loss': self.best_val_loss,
             'best_auc': self.best_auc,
-            'logs': self.logs
+            'logs': self.log.get_logs()
         }
         model_path = os.path.join(config.save_model_path, f"{name}.pth")
         torch.save(checkpoint, model_path)
@@ -162,7 +154,7 @@ class TrainingManager():
 
         self.best_val_loss = checkpoint['best_val_loss']
         self.best_auc = checkpoint['best_auc']
-        self.logs = checkpoint['logs']
+        self.log.set_logs(checkpoint['logs'])
     
         return checkpoint
     
@@ -171,16 +163,16 @@ class TrainingManager():
 
         for epoch in range(self.last_completed_epoch + 1, hyperparameters.total_epoch):
             start = time.time()
-            print(f"\n================\nEpoch {epoch + 1}")
-            print(f"{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
+            self.log(f"\n================\nEpoch {epoch + 1}")
+            self.log(f"{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
             
             train_loss = self._training_step(train_loader=self.train_loader)
             
-            print(f"\nTrain Loss: {train_loss:.4f}")
+            self.log(f"\nTrain Loss: {train_loss:.4f}")
 
             val_accuracy, val_auc, val_loss = self._validation_step(val_loader=self.val_loader)
 
-            print(f"Validation Loss: {val_loss:.4f}")
+            self.log(f"Validation Loss: {val_loss:.4f}")
 
            
             self.scheduler.step(val_auc)
@@ -188,16 +180,11 @@ class TrainingManager():
             stop = time.time()
             epoch_time = stop - start
 
-            print(f"Validation auc score: {val_auc}")
-            print(f"Validation accuracy score: {val_accuracy}")
-            print(f"Epoch time: {round(epoch_time,2)} s")
+            self.log(f"Validation auc score: {val_auc}")
+            self.log(f"Validation accuracy score: {val_accuracy}")
+            self.log(f"Epoch time: {round(epoch_time,2)} s")
 
-            self.logs["epoch"].append(epoch)
-            self.logs["epoch_time"].append(epoch_time)
-            self.logs["train_loss"].append(train_loss)
-            self.logs["val_loss"].append(val_loss)
-            self.logs["val_auc"].append(val_auc)
-            self.logs["val_accuracy"].append(val_accuracy)
+            self.log.save_params(epoch, epoch_time, train_loss, val_loss, val_auc,val_accuracy)
 
 
             self.last_completed_epoch = epoch
@@ -205,23 +192,23 @@ class TrainingManager():
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
                 self._save_checkpoint("Best_Loss")
-                print(f"Best loss model saved")
+                self.log(f"Best loss model saved")
 
             if val_auc > self.best_auc:
                 self.best_auc = val_auc
                 self._save_checkpoint("Best_auc")
-                print(f"Best auc model saved")
+                self.log(f"Best auc model saved")
 
             if epoch % hyperparameters.save_every == 0:
-                save_logs_as_plots(logs=self.logs, save_path=config.logs_path)
+                self.log.plot()
                 self._save_checkpoint("Latest")
-                print(f"Latest model saved")
+                self.log(f"Latest model saved")
 
             
 
 
         self._save_checkpoint("Final")
-        print(f"Final model saved")
+        self.log(f"Final model saved")
 
-        self.log_file.close()
-        print("Training completed.")
+        del self.log
+        self.log("Training completed.")
