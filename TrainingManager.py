@@ -8,12 +8,10 @@ import torch.nn as nn
 import numpy as np
 import os
 import time
-import sys
 
 
 from config import config
 from dataset_manager.dataset_manager import get_loaders
-from helper_scripts.logs_plots import save_logs_as_plots
 
 from logger import Logger
 

@@ -59,6 +59,3 @@ class Logger():
             filename = f"{metric}.png"
             plt.savefig(os.path.join(save_path, filename))
             plt.close()
-
-    def __del__(self):
-        self.log_file.close()
