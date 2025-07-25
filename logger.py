@@ -49,7 +49,7 @@ class Logger():
 
         for metric in metrics:
             plt.figure(figsize=(8, 6))
-            plt.plot(self.logs["epoch"], self.logs[metric], marker='o', label=metric)
+            plt.plot([x+1 for x in self.logs["epoch"]], self.logs[metric], marker='o', label=metric)
             plt.title(f"{metric.replace('_', ' ').title()} Over Epochs")
             plt.xlabel("Epoch")
             plt.ylabel(metric.replace('_', ' ').title())
