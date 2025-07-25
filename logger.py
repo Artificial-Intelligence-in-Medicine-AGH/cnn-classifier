@@ -20,11 +20,13 @@ class Logger():
         self.current_log = ""
         self.log_file_name = f"{config.logs_path}/training_{datetime.today().strftime('%Y-%m-%d %H:%M:%S')}.log"
 
-    def __call__(self, line:str):
+    def __call__(self, line:str) -> str:
         with open(self.log_file_name, "a") as f:
             print(line, file = f)
+        
+        return line
 
-    def save_params(self, epoch, epoch_time, train_loss, val_loss,val_auc, val_accuracy):
+    def save_params(self, epoch:int, epoch_time:float, train_loss:float, val_loss:float,val_auc:float, val_accuracy:float) -> None:
         self.logs["epoch"].append(epoch)
         self.logs["epoch_time"].append(epoch_time)
         self.logs["train_loss"].append(train_loss)
@@ -32,13 +34,14 @@ class Logger():
         self.logs["val_auc"].append(val_auc)
         self.logs["val_accuracy"].append(val_accuracy)
     
-    def set_logs(self, logs:dict[str]):
+    def set_logs(self, logs:dict[str]) -> dict:
         self.logs = logs
+        return logs
 
-    def get_logs(self) -> dict[str]:
+    def get_logs(self) -> dict:
         return self.logs
     
-    def plot(self):
+    def plot(self) -> str:
         save_path = os.path.join(config.logs_path, 'plots')
         os.makedirs(save_path, exist_ok=True)
         
@@ -59,3 +62,5 @@ class Logger():
             filename = f"{metric}.png"
             plt.savefig(os.path.join(save_path, filename))
             plt.close()
+
+        return save_path
