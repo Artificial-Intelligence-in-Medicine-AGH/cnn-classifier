@@ -24,18 +24,18 @@ Note that conf.json should be mannualy created in main directory (the same that 
 Here is an example of config.json:
 ```json
 {
-    "dataset_path": "path/to/folder",
-    "labels_file_path": "path/to/file",
-    "logs_path": "path/to/folder",
-    "save_model_path": "path/to/folder",
+    "dataset_path": "/home/franio/Desktop/cnn-classifier/data",
+    "labels_file_path": "/home/franio/Desktop/cnn-classifier/data/small_data_entry.csv",
+    "logs_path": "/home/franio/Desktop/cnn-classifier/logs",
+    "save_model_path": "/home/franio/Desktop/cnn-classifier/model",
     "model_name": "tf_efficientnet_b0.in1k",
     "final_img_width": 224,
     "num_channels": 1,
     "hyperparameters":{
         "learning_rate": 0.001,
-        "batch_size": 16,
+        "batch_size": 1,
         "total_epoch": 100,
-        "save_every":10,
+        "save_every":1,
         "weight_decay":0.0001,
         "max_norm":1,
         "drop_rate":0.3,
@@ -46,7 +46,26 @@ Here is an example of config.json:
             "factor": 0.1,
             "patience": 2
         }
-    }
+    },
+
+    "classes":  [
+    "Cardiomegaly",
+    "Emphysema",
+    "Effusion",
+    "Hernia",
+    "Infiltration",
+    "Mass",
+    "Nodule",
+    "Atelectasis",
+    "Pneumothorax",
+    "Pleural_Thickening",
+    "Pneumonia",
+    "Fibrosis",
+    "Edema",
+    "Consolidation"
+    ],
+
+    "no_class_name":"No Finding" //WIP: Moving classes to bit maps, rethink preprocessing
 }
 ```
 

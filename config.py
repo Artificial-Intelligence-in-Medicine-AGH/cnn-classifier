@@ -42,6 +42,9 @@ class Config(BaseModel):
 
     hyperparameters:Hyperparameters
 
+    classes:list[str]
+    no_class_name:Optional[str]  #Before moving to bitmaps we need to add no_class in preprocessing, as it splits ratios
+
     @staticmethod 
     def load_from_file(file_path:str):
         with open(file_path, "r") as f:
