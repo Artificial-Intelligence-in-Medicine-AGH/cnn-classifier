@@ -65,7 +65,7 @@ class TrainingManager():
 
         self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
         self.log(f"============================ MODEL {config.model_name} ============================")
-           
+
 
 
 
@@ -138,7 +138,7 @@ class TrainingManager():
 
         return checkpoint
     
-    def _load_chceckpoint(self, name:Optional[str]) -> dict:
+    def _load_chceckpoint(self, name:str) -> dict:
         checkpoint = torch.load(os.path.join(config.save_model_path, name))
         
         self.last_completed_epoch = checkpoint['epoch']
