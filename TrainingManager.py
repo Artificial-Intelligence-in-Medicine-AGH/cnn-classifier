@@ -62,12 +62,10 @@ class TrainingManager():
                 exit()
 
             self.log(f"Reasuming training from {checkpoint_name} file")
-            self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            self.log(f"============================ MODEL {config.model_name} ============================")
 
-        else:
-            self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
-            self.log(f"============================ MODEL {config.model_name} ============================")
+        self.log(f"Running on device: {self.device} {torch.cuda.get_device_name(0) if torch.cuda.is_available() else ''}")
+        self.log(f"============================ MODEL {config.model_name} ============================")
+           
 
 
 
