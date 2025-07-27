@@ -11,7 +11,7 @@ def parse_run_arguments() -> None:
     global checkpoint_name
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l_ch', '--load_checkpoint', action="store", default=None)
+    parser.add_argument('-l', '--load_checkpoint', action="store", default=None)
     args = parser.parse_args()
 
     checkpoint_name = args.load_checkpoint  
