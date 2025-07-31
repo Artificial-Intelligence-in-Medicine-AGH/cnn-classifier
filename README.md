@@ -63,9 +63,7 @@ Here is an example of config.json:
     "Fibrosis",
     "Edema",
     "Consolidation"
-    ],
-
-    "no_class_name":"No Finding" //WIP: Moving classes to bit maps, rethink preprocessing
+    ]
 }
 ```
 

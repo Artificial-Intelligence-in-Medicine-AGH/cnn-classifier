@@ -5,6 +5,7 @@ import torch
 from PIL import Image
 from pydantic import BaseModel, ConfigDict
 from torch.utils.data import DataLoader, Dataset
+import pandas as pd
 
 from augmentation.transform import train_transform, val_transform
 from config import config
@@ -21,28 +22,16 @@ class Case(BaseModel):
 
 
 def load_data_from_csv(subfolder_name: str, labels_dict: dict[str, str]) -> list[Case]:
+    
     folder_path = os.path.join(config.dataset_path, subfolder_name)
-
     dataset: list[Case] = []
 
     for file in os.listdir(folder_path):
         if file.endswith(".png"):
-            human_redable_labels = labels_dict[file].split('|')
-            labels = torch.zeros(14)
-            
-            # Petla ktora generuje wlasciwy format, czyli nazwa pliku i lista chorob z typem int
-            # Ze zrodla, czyli Hernia|Infiltration dostajemy to: labels=[0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            # Pozycja choroby okreslona jest w zahardcodowanej tablicy ref_classes
-            for single_label in human_redable_labels:
-                if single_label in REF_CLASSES:
-                    idx = REF_CLASSES.index(single_label)
-                    labels[idx] = 1
-                elif single_label != 'No Finding':
-                    print(f"Label not found: {single_label}")
             file_path = os.path.join(folder_path, file)
-            train_case = Case(path=file_path, labels=labels)
+            lables = torch.tensor([float(n) for n in labels_dict[file]])
+            train_case = Case(path=file_path, labels=lables)
             dataset.append(train_case)
-            
 
     return dataset
 
@@ -67,9 +56,8 @@ class CustomDataset(Dataset):
 
 
 def get_loaders() -> tuple[DataLoader, DataLoader]:
-    labelsTable = np.genfromtxt(config.labels_file_path, delimiter=',', dtype=str, usecols=(0, 1), skip_header=1)
-    # Kluczem jest nazwa pliku, wartoscia sa nazwy klas, np. 00000001_000.png -> Hernia|Mass|Nodule
-    labels_dict: dict[str, str] = dict(labelsTable)  # Labels table to lista par (klucz -> wartosc).
+    labelsTable:pd.DataFrame = pd.read_csv(os.path.join(config.dataset_path, "bit_map_data.csv"), dtype=str)
+    labels_dict = dict(zip([row[1] for row in labelsTable.itertuples()],[row[2] for row in labelsTable.itertuples()]))
 
     train_data = load_data_from_csv("train", labels_dict)
     train_dataset = CustomDataset(train_data, transform=train_transform)

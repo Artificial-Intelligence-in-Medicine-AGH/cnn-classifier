@@ -7,3 +7,4 @@ pydantic
 matplotlib
 pillow
 albumentations
+pandas
