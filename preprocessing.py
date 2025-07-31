@@ -41,8 +41,7 @@ for row in data_labels.itertuples():
 BITMAP_PATH = os.path.join(config.dataset_path, "bit_map_data.csv")
 (pd.DataFrame(to_csv_data)).to_csv(BITMAP_PATH, index = False)
 
-if not None:
-    REF_CLASSES.append("No Finding")
+print(f"CSV with bitmaps saved in {BITMAP_PATH}")
 
 def get_ratios(labelsTable: np.ndarray, start: int, stop: int) -> np.ndarray:
     classes = {}
@@ -54,7 +53,7 @@ def get_ratios(labelsTable: np.ndarray, start: int, stop: int) -> np.ndarray:
                 classes[key] = 0
             classes[key] += 1
 
-    assert len(classes) == len(REF_CLASSES)
+    assert len(classes) == len(REF_CLASSES) + 1
 
     classes = {key: classes[key] for key in REF_CLASSES}
 
