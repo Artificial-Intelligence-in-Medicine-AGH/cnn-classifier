@@ -23,7 +23,7 @@ LABELS_PATH = config.labels_file_path
 data_labels = pd.read_csv(LABELS_PATH)
 
 to_csv_data = {
-    "image_name": [],
+    "file_name": [],
     "bit_map": []
 }
 
@@ -35,7 +35,7 @@ for row in data_labels.itertuples():
             bit_map[idx] = 1
             
     bit_map_str = "".join(map(str, bit_map.astype(int)))
-    to_csv_data["image_name"].append(row[1])
+    to_csv_data["file_name"].append(row[1])
     to_csv_data["bit_map"].append(bit_map_str)
    
 BITMAP_PATH = os.path.join(config.dataset_path, "bit_map_data.csv")
