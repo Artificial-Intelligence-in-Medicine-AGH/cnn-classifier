@@ -10,22 +10,7 @@ from augmentation.transform import train_transform, val_transform
 from config import config
 
 # TODO: ----- Do osobnego csv -----
-REF_CLASSES = [
-    "Cardiomegaly",
-    "Emphysema",
-    "Effusion",
-    "Hernia",
-    "Infiltration",
-    "Mass",
-    "Nodule",
-    "Atelectasis",
-    "Pneumothorax",
-    "Pleural_Thickening",
-    "Pneumonia",
-    "Fibrosis",
-    "Edema",
-    "Consolidation",
-]
+REF_CLASSES = config.classes
 
 
 class Case(BaseModel):
@@ -44,6 +29,7 @@ def load_data_from_csv(subfolder_name: str, labels_dict: dict[str, str]) -> list
         if file.endswith(".png"):
             human_redable_labels = labels_dict[file].split('|')
             labels = torch.zeros(14)
+            
             # Petla ktora generuje wlasciwy format, czyli nazwa pliku i lista chorob z typem int
             # Ze zrodla, czyli Hernia|Infiltration dostajemy to: labels=[0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             # Pozycja choroby okreslona jest w zahardcodowanej tablicy ref_classes
@@ -56,6 +42,7 @@ def load_data_from_csv(subfolder_name: str, labels_dict: dict[str, str]) -> list
             file_path = os.path.join(folder_path, file)
             train_case = Case(path=file_path, labels=labels)
             dataset.append(train_case)
+            
 
     return dataset
 
@@ -81,7 +68,6 @@ class CustomDataset(Dataset):
 
 def get_loaders() -> tuple[DataLoader, DataLoader]:
     labelsTable = np.genfromtxt(config.labels_file_path, delimiter=',', dtype=str, usecols=(0, 1), skip_header=1)
-
     # Kluczem jest nazwa pliku, wartoscia sa nazwy klas, np. 00000001_000.png -> Hernia|Mass|Nodule
     labels_dict: dict[str, str] = dict(labelsTable)  # Labels table to lista par (klucz -> wartosc).
 
