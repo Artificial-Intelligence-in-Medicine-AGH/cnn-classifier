@@ -17,7 +17,7 @@ jobs:
         uses: wlixcc/SFTP-Deploy-Action@v1.2.5
         with:
           server: ${{ secrets.ftp_server }}
-          username: ${{ secrets.ftp_username }}
-          password: ${{ secrets.ftp_password }}
-          ssh_private_key: ""
+          username: ""
+          password: ""
+          ssh_private_key: ${{ secrets.ssh_private_key }}
           remote_path: /net/tscratch/people/plgfrkubala/cnn-classifier
