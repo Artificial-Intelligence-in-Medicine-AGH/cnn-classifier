@@ -1,44 +1,79 @@
-# cnn classifier
+# 🧠 CNN Classifier
 
-Multiclassification algorithm created using Convolutional Neural Network
+A multiclass image classification project built using **Convolutional Neural Networks (CNN)** and **PyTorch**.  
+The model is designed to classify various medical image conditions using an **EfficientNet-based architecture**.
 
-## First time setup
+---
 
-Use python3.11, create virtual environment and install required packages
+## 🚀 Features
 
-Install pytorch by your preferences with official [PyTroch Get Started guide](https://pytorch.org/get-started/locally/)
+- Multi-class classification using deep CNN architecture  
+- Modular and configurable training system  
+- Automated logging and visualization  
+- Configurable preprocessing and dataset management  
 
-NOTE for AMD gpu users: try installing pytorch using following command BEFORE installing all other requirements:
-```shell
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.3
+---
+
+## 🧩 First-Time Setup
+
+### 1. Python Environment
+
+Use **Python 3.11**.  
+Create a virtual environment and install required packages:
+
+```bash
+python3.11 -m venv venv
+source venv/bin/activate
 ```
 
-Installing other requirements:
-```shell
+---
+
+### 2. Install PyTorch
+
+Follow the [official PyTorch Get Started Guide](https://pytorch.org/get-started/locally/)  
+to install PyTorch for your system.
+
+> **NOTE for AMD GPU users:**  
+> Install PyTorch manually before other requirements using:
+> ```bash
+> pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.3
+> ```
+
+---
+
+### 3. Install Other Requirements
+
+Once PyTorch is installed, install the remaining dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
 
-## Configuration File
-Note that conf.json should be mannualy created in main directory (the same that contains config.py)
+---
 
-Here is an example of config.json:
+## ⚙️ Configuration File
+
+Create a configuration file named **`config.json`** in the project root (same directory as `config.py`).
+
+### Example `config.json`
+
 ```json
 {
-    "dataset_path": "/home/franio/Desktop/cnn-classifier/data",
-    "labels_file_path": "/home/franio/Desktop/cnn-classifier/data/small_data_entry.csv",
-    "logs_path": "/home/franio/Desktop/cnn-classifier/logs",
-    "save_model_path": "/home/franio/Desktop/cnn-classifier/model",
+    "dataset_path": "/home/user/cnn-classifier/data",
+    "labels_file_path": "/home/user/cnn-classifier/data/labels.csv",
+    "logs_path": "/home/user/cnn-classifier/logs",
+    "save_model_path": "/home/user/cnn-classifier/model",
     "model_name": "tf_efficientnet_b0.in1k",
     "final_img_width": 224,
     "num_channels": 1,
-    "hyperparameters":{
+    "hyperparameters": {
         "learning_rate": 0.001,
         "batch_size": 1,
         "total_epoch": 100,
-        "save_every":1,
-        "weight_decay":0.0001,
-        "max_norm":1,
-        "drop_rate":0.3,
+        "save_every": 1,
+        "weight_decay": 0.0001,
+        "max_norm": 1,
+        "drop_rate": 0.3,
         "num_blocks_to_unfreeze": 2,
         "scheduler_type": "ReduceLROnPlateau",
         "scheduler_params": {
@@ -47,40 +82,91 @@ Here is an example of config.json:
             "patience": 2
         }
     },
-
-    "classes":  [
-    "Cardiomegaly",
-    "Emphysema",
-    "Effusion",
-    "Hernia",
-    "Infiltration",
-    "Mass",
-    "Nodule",
-    "Atelectasis",
-    "Pneumothorax",
-    "Pleural_Thickening",
-    "Pneumonia",
-    "Fibrosis",
-    "Edema",
-    "Consolidation"
+    "classes": [
+        "Cardiomegaly",
+        "Emphysema",
+        "Effusion",
+        "Hernia",
+        "Infiltration",
+        "Mass",
+        "Nodule",
+        "Atelectasis",
+        "Pneumothorax",
+        "Pleural_Thickening",
+        "Pneumonia",
+        "Fibrosis",
+        "Edema",
+        "Consolidation"
     ]
 }
 ```
 
-## Preprocessing
-Preprocessing resizes all images, changes their format to `.pth` and split them into train, val, test subfolders of `config.dataset_path` 
+---
 
-To run preprocessing call preprocessing script with  directory containing data as an program argument:
-```cmd
-preprocessing.py <data_dir>
+## 🧰 Preprocessing
+
+Before training, you must preprocess your dataset.
+
+Preprocessing performs:
+
+- Image resizing to the target width  
+- Format conversion to `.pth` tensors  
+- Automatic train/validation/test splitting  
+
+### Run Preprocessing
+
+```bash
+python preprocessing.py <data_dir>
 ```
-Note that preprocessing script copy date instead of moving it.
 
-### Directory structures
-Data will be splitted into val, train and test directories in the following directory structure:
-<br/>/`config.dataset_path`
-<br/>├──/train
-<br/>├──/val
-<br/>└──/test
+> **Note:** The preprocessing script **copies** files instead of moving them.
 
-Each of them will be created in one directory with path to it provided in configuration file.
+---
+
+## 📂 Directory Structure
+
+After preprocessing, your dataset will follow this structure:
+
+```
+/config.dataset_path
+├── train/
+├── val/
+└── test/
+```
+
+Each directory will be automatically created based on paths provided in the configuration file.
+
+---
+
+## 🏗️ Project Structure
+
+```
+cnn-classifier/
+├── config.py
+├── config.json
+├── dataset_manager/
+├── preprocessing.py
+├── training_manager.py
+├── logger.py
+├── model/
+└── logs/
+```
+
+---
+
+## 📈 Logging
+
+Training logs and plots are automatically generated under:
+
+```
+/logs/
+```
+
+Metrics such as **loss**, **accuracy**, and **AUC** are plotted and saved as `.png` images for each epoch.
+
+---
+
+## 📜 License
+
+This project is released under the **MIT License**.  
+Feel free to use and modify it for educational and research purposes.
