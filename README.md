@@ -1,7 +1,7 @@
 # 🧠 CNN Classifier
 
 A multiclass image classification project built using **Convolutional Neural Networks (CNN)** and **PyTorch**.  
-The model is designed to classify various medical image conditions using an **EfficientNet-based architecture**.
+This model aims to classify various heart diseases based on medical images.
 
 ---
 
