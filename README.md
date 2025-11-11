@@ -136,24 +136,6 @@ After preprocessing, your dataset will follow this structure:
 
 Each directory will be automatically created based on paths provided in the configuration file.
 
----
-
-## 🏗️ Project Structure
-
-```
-cnn-classifier/
-├── config.py
-├── config.json
-├── dataset_manager/
-├── preprocessing.py
-├── training_manager.py
-├── logger.py
-├── model/
-└── logs/
-```
-
----
-
 ## 📈 Logging
 
 Training logs and plots are automatically generated under:
