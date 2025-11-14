@@ -1,11 +1,11 @@
-# 🧠 CNN Classifier
+# CNN Classifier
 
 A multiclass image classification project built using **Convolutional Neural Networks (CNN)** and **PyTorch**.  
 This model aims to classify various heart diseases based on medical images.
 
 ---
 
-## 🚀 Features
+## Features
 
 - Multi-class classification using deep CNN architecture  
 - Modular and configurable training system  
@@ -14,7 +14,7 @@ This model aims to classify various heart diseases based on medical images.
 
 ---
 
-## 🧩 First-Time Setup
+## First-Time Setup
 
 ### 1. Python Environment
 
@@ -51,7 +51,7 @@ pip install -r requirements.txt
 
 ---
 
-## ⚙️ Configuration File
+## Configuration File
 
 Create a configuration file named **`config.json`** in the project root (same directory as `config.py`).
 
@@ -103,7 +103,7 @@ Create a configuration file named **`config.json`** in the project root (same di
 
 ---
 
-## 🧰 Preprocessing
+## Preprocessing
 
 Before training, you must preprocess your dataset.
 
@@ -123,7 +123,7 @@ python preprocessing.py <data_dir>
 
 ---
 
-## 📂 Directory Structure
+## Directory Structure
 
 After preprocessing, your dataset will follow this structure:
 
@@ -136,7 +136,7 @@ After preprocessing, your dataset will follow this structure:
 
 Each directory will be automatically created based on paths provided in the configuration file.
 
-## 📈 Logging
+## Logging
 
 Training logs and plots are automatically generated under:
 
@@ -148,7 +148,7 @@ Metrics such as **loss**, **accuracy**, and **AUC** are plotted and saved as `.p
 
 ---
 
-## 📜 License
+## License
 
 This project is released under the **MIT License**.  
 Feel free to use and modify it for educational and research purposes.
