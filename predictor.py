@@ -3,19 +3,32 @@ import timm
 import torch
 import torch.nn as nn
 import numpy as np
+import os
 
 from config import config
 
+# TODO: import _load_model from the other file once created
+# from model_loader import _load_model
 
-# TODO create predictor class
+
 class Predictor(nn.Module):
-    def __init__(self, model_name: str):
-        # TODO: Load Model models_path + model_name for predicting
+    def __init__(self, models_path:str, model_name: str):
         super().__init__()
         self.device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
+        self.models_path: str = models_path
         self.name: str = model_name
+        self.model_path = os.path.join(models_path, model_name)
+
+
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError(f"Model file not found {self.model_path}.")
+    
+        # Calling the external _load_model function
+        _load_model(self)
+
         self.to(self.device)
 
+        print(f"Predictor initialized with model: {self.model_path} on device: {self.device}")
 
     @torch.no_grad()
     def _predict(self, img: torch.Tensor):
