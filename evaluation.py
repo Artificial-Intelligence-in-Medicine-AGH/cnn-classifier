@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Union
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import precision_score, recall_score, accuracy_score
 import numpy as np
 
 
@@ -30,3 +30,11 @@ class Evaluation():
 
         
         return MetricsOutput(precision=precision, recall=recall)
+
+    def accuracy(self, y_true: Union[List, np.ndarray], y_pred: Union[List, np.ndarray]) -> float:
+        # input shape validation
+        if len(y_true) != len(y_pred):
+            raise ValueError(f"Shape mismatch: y_true has length {len(y_true)}, "f"but y_pred has length {len(y_pred)}")
+
+        accuracy = accuracy_score(y_true, y_pred)
+        return float(accuracy)
