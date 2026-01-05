@@ -23,16 +23,32 @@ from timm.models import PretrainedCfg
 from config import config
 
 
-class Predictor(nn.Module):
+class Predictor:
     def __init__(self, models_path: str, model_name: str) -> None:
-        super().__init__()
+        """Object used to make predictions on given image tensor
 
+        Args:
+            models_path (str): path to folder with models
+            model_name (str): name of model
+
+        Raises:
+            FileNotFoundError: when directory `models_path` does not exist
+        """
         self.device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
+        self.name: str = model_name
+        self.model_path = os.path.join(models_path, model_name)
 
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError(f"Model file not found {self.model_path}.")
+
+        # model loader
         self.model_loader_config: ModelLoaderConfig = ModelLoaderConfig(self.device, models_path, model_name)
         self.loader_factory: ModelLoader = get_loader_factory(loader_type=ModelLoaderType.TIMM_MODEL_FACTORY,
                                                               loader_config=self.model_loader_config)
-        self.model: torch.nn.Module = self._load_model()
+        
+        # loading model
+        self._model: torch.nn.Module = self._load_model()
+        self._model.to(self.device)
 
         print(f"Predictor initialized with model: {self.model_path} on device: {self.device}")
 
