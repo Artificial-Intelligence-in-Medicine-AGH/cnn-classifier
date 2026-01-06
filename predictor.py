@@ -68,7 +68,7 @@ class Predictor:
 
     @torch.no_grad()
     def _predict_raw(self, X:torch.Tensor) -> torch.Tensor:
-        """Calculates raw output from model
+        """Calculates raw output from model for tensor `X`
 
         Args:
             X (torch.Tensor): input tesor for prediction
@@ -90,7 +90,7 @@ class Predictor:
 
     @torch.no_grad()
     def _predict(self, X: torch.Tensor) -> torch.Tensor:
-        """Calculates predictions for given tensor X and applies softmax to them
+        """Calculates predictions for given tensor `X` and applies softmax
 
         Args:
             X (torch.Tensor): image tensor to predict from
@@ -101,7 +101,30 @@ class Predictor:
 
         return torch.softmax(self._predict_raw(X))
 
+
+    @torch.no_grad()
+    def predict(self, X: torch.Tensor) -> dict:
+        """Calculatates predictions for given tensor `X`, applies softmax and decodes 
+
+        Args:
+            X (torch.Tensor): input tensor for prediction
+
+        Returns:
+            dict: {`'label'`: `'class_label'`, `'confidence'`: `float`}
+        """
+        predictions: np.ndarray = self._predict(X).numpy(force=True)
+        idx = np.argmax(predictions)
+        conf = predictions[idx]
+        return {
+            'label': config.classes[idx],
+            'confidence': conf
+        }
+    
+
+    def __call__(self, X: torch.Tensor) -> dict:
+        return self.predict(X)
         
+
     def predict_from_dir(self, dir_path:str):
         #TODO: Create script that would call _predict for photos in given directory and them organize data in somekind of csv or plot 
         pass
