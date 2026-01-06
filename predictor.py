@@ -24,16 +24,22 @@ from config import config
 
 
 class Predictor:
-    def __init__(self, models_path: str, model_name: str) -> None:
+    def __init__(self, 
+                 models_path: str, 
+                 model_name: str, *, 
+                 outputs_transform_fn=torch.softmax) -> None:
         """Object used to make predictions on given image tensor
 
         Args:
             models_path (str): path to folder with models
             model_name (str): name of model
+            *
+            outputs_transform_fn (function): function to apply to raw predictions from model
 
         Raises:
             FileNotFoundError: when directory `models_path` does not exist
         """
+        
         self.device = torch.accelerator.current_accelerator() if torch.accelerator.is_available() else torch.device('cpu')
         self.name: str = model_name
         self.model_path = os.path.join(models_path, model_name)
@@ -50,7 +56,10 @@ class Predictor:
         self._model: torch.nn.Module = self._load_model()
         self._model.to(self.device)
 
-        print(f"Predictor initialized with model: {self.model_path} on device: {self.device}")
+        # function to apply on outputs from model inference
+        self.outputs_transform_fn = outputs_transform_fn
+
+        print(f"Predictor succesifully initialized with model: {self.name} on device: {self.device}")
 
 
     def _load_model(self) -> torch.nn.Module:
@@ -99,7 +108,7 @@ class Predictor:
             torch.Tensor: 1d tensor representing probabilities of given classes
         """
 
-        return torch.softmax(self._predict_raw(X))
+        return self.outputs_transform_fn(self._predict_raw(X))
 
 
     @torch.no_grad()
