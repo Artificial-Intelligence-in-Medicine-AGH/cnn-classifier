@@ -67,6 +67,28 @@ class Predictor:
 
 
     @torch.no_grad()
+    def _predict_raw(self, X:torch.Tensor) -> torch.Tensor:
+        """Calculates raw output from model
+
+        Args:
+            X (torch.Tensor): input tesor for prediction
+
+        Returns:
+            torch.Tensor: 1d tensor with raw outputs (not decoded) from model
+        """
+        
+        # set to eval mode
+        if self._model.training:
+            self._model.eval()
+
+        # check if devices match
+        if self.device != X.device:
+            X = X.to(self.device)
+        
+        return self._model(X).detach().cpu().flatten()
+
+
+    @torch.no_grad()
     def _predict(self, X: torch.Tensor) -> torch.Tensor:
         """Calculates predictions for given tensor X and applies softmax to them
 
@@ -76,15 +98,8 @@ class Predictor:
         Returns:
             torch.Tensor: 1d tensor representing probabilities of given classes
         """
-        # set to eval mode
-        if self._model.training:
-            self._model.eval()
 
-        # check if devices match
-        if self.device != X.device:
-            X = X.to(self.device)
-
-        return torch.softmax(self._model(X).detach().cpu().flatten())
+        return torch.softmax(self._predict_raw(X))
 
         
     def predict_from_dir(self, dir_path:str):
