@@ -52,6 +52,7 @@ class Predictor:
 
         print(f"Predictor initialized with model: {self.model_path} on device: {self.device}")
 
+
     def _load_model(self) -> torch.nn.Module:
         """
         Loads and prepares the model for prediction task.
@@ -64,45 +65,26 @@ class Predictor:
 
         return self.loader_factory.load_model(self.model_loader_config.model_name)
 
+
     @torch.no_grad()
-    def _predict(self, img: torch.Tensor):
+    def _predict(self, X: torch.Tensor) -> torch.Tensor:
+        """Calculates predictions for given tensor X and applies softmax to them
+
+        Args:
+            X (torch.Tensor): image tensor to predict from
+
+        Returns:
+            torch.Tensor: 1d tensor representing probabilities of given classes
         """
-        Run inference on a single preprocessed image tensor and return predicted label and confidence.
+        # set to eval mode
+        if self._model.training:
+            self._model.eval()
 
-        Parameters
-        ----------
-        img : torch.Tensor
-            Aproprietly preprocessed image.
+        # check if devices match
+        if self.device != X.device:
+            X = X.to(self.device)
 
-        Returns
-        -------
-        dict
-            A dictionary with keys:
-            - 'label' (str): predicted class name from config.classes
-            - 'confidence' (float): probability assigned to the predicted class in [0.0, 1.0]
-
-        Notes
-        -----
-        - The method sets the model to eval() and runs inference with gradients disabled.
-        - The input tensor is moved to the predictor's device (self.device) before forwarding.
-        - Softmax is applied to the model output along the last dimension; results are converted to a NumPy array.
-        - Ensure the model is loaded on the predictor and config.classes matches the model's output dimension.
-        """
-        
-        self.eval()
-        # move Tensor to active device
-        img: torch.Tensor = img.to(self.device)
-
-        # self(img).detach().cpu() -> raw predictions from model placed on cpu
-        # apply softmax to predictions and turn everthing to numpy ndarray
-
-        # TODO: check output of the model (1d/2d) or make it universal somehow
-
-        probabilities: np.ndarray = nn.functional.softmax(self(img).detach().cpu()).numpy(force=True).flatten()
-        
-        # return label with the highest score and the score itself
-        return {'label': config.classes[np.argmax(probabilities)], 
-                'confidence': np.max(probabilities)}
+        return torch.softmax(self._model(X).detach().cpu().flatten())
 
         
     def predict_from_dir(self, dir_path:str):
@@ -150,6 +132,7 @@ class ModelLoader(ABC):
         """Saves loader_config for all model loaders to use"""
         self.loader_config: ModelLoaderConfig = loader_config
 
+
     @abstractmethod
     def load_model(self, model_name: str) -> torch.nn.Module:
         """Loads a given model"""
@@ -163,6 +146,7 @@ class TimmModelLoader(ModelLoader):
         super().__init__(loader_config)
 
         self.model_cache_path: Path = Path(self.loader_config.model_root_path) / 'timm'
+
 
     @override
     def load_model(self, model_name: str) -> torch.nn.Module:
@@ -195,6 +179,7 @@ class TorchModelLoader(ModelLoader):
 
     def __init__(self, loader_config: ModelLoaderConfig) -> None:
         super().__init__(loader_config)
+
 
     @override
     def load_model(self, model_name: str) -> torch.nn.Module:
