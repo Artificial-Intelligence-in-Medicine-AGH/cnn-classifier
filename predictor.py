@@ -18,6 +18,10 @@ import torch.nn as nn
 import numpy as np
 import os
 
+import pandas as pd
+import matplotlib.pyplot as plt
+from PIL import Image
+
 from timm.models import PretrainedCfg
 
 from config import config
@@ -134,9 +138,81 @@ class Predictor:
         return self.predict(X)
         
 
-    def predict_from_dir(self, dir_path:str):
-        #TODO: Create script that would call _predict for photos in given directory and them organize data in somekind of csv or plot 
-        pass
+    def predict_from_dir(self, dir_path: str, output_csv: str = "predictions.csv", plot: bool = False) -> pd.DataFrame:
+        """
+        Iterates over images in a directory, predicts classes, saves to CSV and optionally plots results.
+
+        Args:
+            dir_path (str): Path to the directory containing images.
+            output_csv (str): Filename for the CSV output.
+            plot (bool): Whether to visualize the predictions with matplotlib.
+
+        Returns:
+            pd.DataFrame: DataFrame containing filenames, predicted labels, and confidence scores.
+        """
+            
+        path_obj = Path(dir_path)
+        if not path_obj.exists() or not path_obj.is_dir():
+            raise FileNotFoundError(f"Directory not found: {dir_path}")
+
+        results = []
+        plot_data = []
+
+        files = [f for f in path_obj.iterdir() if f.is_file()]
+
+        if not files:
+            print(f"No images found in {dir_path}")
+            return pd.DataFrame()
+
+        print(f"Processing {len(files)} images from {dir_path}...")
+
+        for file_path in files:
+            try:
+                img = Image.open(file_path).convert('RGB')  # zdjecia sa w formacie PNG, który jest RGBA
+                
+                # .transform() - obrazek => Tensor
+                # .unsqueeze(0) - na pozycji zero dodaje '1' - jest to rozmiar batcha, który jest wymagany przez model
+                input_tensor = self.transform(img).unsqueeze(0)
+
+                prediction = self.predict(input_tensor)
+                
+                result_entry = {
+                    'filename': file_path.name,
+                    'label': prediction['label'],
+                    'confidence': prediction['confidence']
+                }
+                results.append(result_entry)
+
+                if plot:
+                    plot_data.append((img, result_entry))
+
+            except Exception as e:
+                print(f"Error processing {file_path.name}: {e}")
+
+        df = pd.DataFrame(results)
+        
+        # Exporting to CSV
+        if not df.empty and output_csv:
+            df.to_csv(output_csv, index=False)
+            print(f"Predictions saved to {output_csv}")
+
+        # Plotowanie siatki obrazków podpisanych przewidzianą klasą i confidence
+        if plot and not df.empty:
+            num_imgs = len(plot_data)
+            cols = 4
+            rows = (num_imgs + cols - 1) // cols
+            
+            plt.figure(figsize=(15, 4 * rows))
+            for i, (image, pred) in enumerate(plot_data):
+                plt.subplot(rows, cols, i + 1)
+                plt.imshow(image)
+                plt.axis('off')
+                plt.title(f"{pred['label']}\nConf: {pred['confidence']:.4f}")
+            
+            plt.tight_layout()
+            plt.show()
+
+        return df
 
 
 class ModelLoaderConfig:
